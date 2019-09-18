@@ -988,8 +988,9 @@ func (c *Cluster) StateSync(ctx context.Context) error {
 	}
 
 	// a. Untrack items which should not be tracked
-	// b. Track items which should not be remote as local
-	// c. Track items which should not be local as remote
+	// b. Untrack items which have expired
+	// c. Track items which should not be remote as local
+	// d. Track items which should not be local as remote
 	for _, p := range trackedPins {
 		pCid := p.Cid
 		currentPin, err := cState.Get(ctx, pCid)
@@ -1000,6 +1001,12 @@ func (c *Cluster) StateSync(ctx context.Context) error {
 		if err == state.ErrNotFound {
 			logger.Debugf("StateSync: untracking %s: not part of shared state", pCid)
 			c.tracker.Untrack(ctx, pCid)
+			continue
+		}
+
+		if !currentPin.PinOptions.Expire.Equal(time.Unix(0, 0)) && currentPin.PinOptions.Expire.Before(time.Now()) {
+			logger.Infof("StateSync: untracking %s: pin expired", pCid)
+			c.Unpin(ctx, pCid)
 			continue
 		}
 

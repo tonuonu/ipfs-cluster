@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/url"
 	"strconv"
+	"time"
 
 	cid "github.com/ipfs/go-cid"
 )
@@ -60,6 +61,7 @@ func DefaultAddParams() *AddParams {
 			ReplicationFactorMax: 0,
 			Name:                 "",
 			ShardSize:            DefaultShardSize,
+			Expire:               time.Unix(0, 0),
 			Metadata:             make(map[string]string),
 		},
 	}
