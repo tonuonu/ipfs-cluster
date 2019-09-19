@@ -184,6 +184,7 @@ func TestPinOptionsQuery(t *testing.T) {
 				"QmXZrtE5jQwXNqCJMfHUTQkvhQ4ZAnqMnmzFMJfLewuabc",
 				"QmUZ13osndQ5uL4tPWHXe3iBgBgq9gfewcBMSCAuMBsDJ6",
 			}),
+			Expire: time.Now().Add(12 * time.Hour),
 			Metadata: map[string]string{
 				"hello":  "bye",
 				"hello2": "bye2",
@@ -195,6 +196,7 @@ func TestPinOptionsQuery(t *testing.T) {
 			Name:                 "",
 			ShardSize:            0,
 			UserAllocations:      []peer.ID{},
+			Expire:               time.Unix(0, 0),
 			Metadata:             nil,
 		},
 		&PinOptions{
@@ -203,6 +205,7 @@ func TestPinOptionsQuery(t *testing.T) {
 			Name:                 "",
 			ShardSize:            0,
 			UserAllocations:      nil,
+			Expire:               time.Unix(0, 0),
 			Metadata: map[string]string{
 				"": "bye",
 			},

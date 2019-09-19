@@ -773,6 +773,43 @@ func TestClusterPins(t *testing.T) {
 	}
 }
 
+func TestClusterPinsWithExpiration(t *testing.T) {
+	ctx := context.Background()
+	cl, _, _, _ := testingCluster(t)
+	defer cleanState()
+	defer cl.Shutdown(ctx)
+
+	c := test.Cid1
+	opts := api.PinOptions{
+		Expire: time.Now().Add(40 * time.Second),
+	}
+	_, err := cl.Pin(ctx, c, opts)
+	if err != nil {
+		t.Fatal("pin should have worked:", err)
+	}
+
+	pinDelay()
+
+	pins, err := cl.Pins(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(pins) != 1 {
+		t.Fatal("pin should be part of the state")
+	}
+
+	// try after expiry time and state sync interval
+	time.Sleep(cl.config.StateSyncInterval + 1*time.Second)
+
+	pins, err = cl.Pins(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(pins) != 0 {
+		t.Fatal("pin should not be part of the state")
+	}
+}
+
 func TestClusterPinGet(t *testing.T) {
 	ctx := context.Background()
 	cl, _, _, _ := testingCluster(t)

@@ -353,6 +353,10 @@ content.
 					Value: defaultAddParams.ReplicationFactorMax,
 					Usage: "Sets the maximum replication factor for pinning this file",
 				},
+				cli.StringFlag{
+					Name:  "expires-in",
+					Usage: "Duration after which pin should be unpinned automatically",
+				},
 				cli.StringSliceFlag{
 					Name:  "metadata",
 					Usage: "Pin metadata: key=value. Can be added multiple times",
@@ -408,6 +412,12 @@ content.
 				p := api.DefaultAddParams()
 				p.ReplicationFactorMin = c.Int("replication-min")
 				p.ReplicationFactorMax = c.Int("replication-max")
+				if expiresIn := c.String("expires-in"); expiresIn != "" {
+					d, err := time.ParseDuration(expiresIn)
+					checkErr("parsing expires-in", err)
+					p.Expire = time.Now().Add(d)
+				}
+
 				p.Metadata = parseMetadata(c.StringSlice("metadata"))
 				p.Name = name
 				if c.String("allocations") != "" {
@@ -533,6 +543,10 @@ would stil be respected.
 							Value: "",
 							Usage: "Sets a name for this pin",
 						},
+						cli.StringFlag{
+							Name:  "expires-in",
+							Usage: "Duration after which pin should be unpinned automatically",
+						},
 						cli.StringSliceFlag{
 							Name:  "metadata",
 							Usage: "Pin metadata: key=value. Can be added multiple times",
@@ -572,12 +586,21 @@ would stil be respected.
 								checkErr("decoding allocations", errors.New("some peer IDs could not be decoded"))
 							}
 						}
+						var expire time.Time
+						if expiresIn := c.String("expires-in"); expiresIn != "" {
+							d, err := time.ParseDuration(expiresIn)
+							checkErr("parsing expires-in", err)
+							expire = time.Now().Add(d)
+						} else {
+							expire = time.Unix(0, 0)
+						}
 
 						opts := api.PinOptions{
 							ReplicationFactorMin: rplMin,
 							ReplicationFactorMax: rplMax,
 							Name:                 c.String("name"),
 							UserAllocations:      userAllocs,
+							Expire:               expire,
 							Metadata:             parseMetadata(c.StringSlice("metadata")),
 						}
 

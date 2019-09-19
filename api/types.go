@@ -585,6 +585,12 @@ func (po *PinOptions) FromQuery(q url.Values) error {
 			return fmt.Errorf("parameter expire invalid")
 		}
 		po.Expire = time.Unix(0, int64(tm))
+	} else if v = q.Get("expires-in"); v != "" {
+		d, err := time.ParseDuration(v)
+		if err != nil {
+			return errors.New("parameter expires-in invalid")
+		}
+		po.Expire = time.Now().Add(d)
 	} else {
 		po.Expire = time.Unix(0, 0)
 	}
