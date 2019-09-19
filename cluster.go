@@ -1004,7 +1004,7 @@ func (c *Cluster) StateSync(ctx context.Context) error {
 			continue
 		}
 
-		if !currentPin.PinOptions.Expire.Equal(time.Unix(0, 0)) && currentPin.PinOptions.Expire.Before(time.Now()) {
+		if currentPin.PinOptions.Expire != 0 && currentPin.PinOptions.Expire < time.Now().UnixNano() {
 			logger.Infof("StateSync: untracking %s: pin expired", pCid)
 			c.Unpin(ctx, pCid)
 			continue

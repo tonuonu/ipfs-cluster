@@ -610,7 +610,7 @@ var testPinOpts = api.PinOptions{
 	ReplicationFactorMin: 6,
 	Name:                 "hello there",
 	UserAllocations:      []peer.ID{test.PeerID1, test.PeerID2},
-	Expire:               time.Now().Add(30 * time.Second),
+	Expire:               time.Now().Add(30 * time.Second).UnixNano(),
 }
 
 var pathTestCases = []pathCase{

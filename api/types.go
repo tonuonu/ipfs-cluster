@@ -464,7 +464,7 @@ type PinOptions struct {
 	Name                 string            `json:"name" codec:"n,omitempty"`
 	ShardSize            uint64            `json:"shard_size" codec:"s,omitempty"`
 	UserAllocations      []peer.ID         `json:"user_allocations" codec:"ua,omitempty"`
-	Expire               time.Time         `json:"expire" codec:"e,omitempty"`
+	Expire               int64             `json:"expire" codec:"e,omitempty"`
 	Metadata             map[string]string `json:"metadata" codec:"m,omitempty"`
 	PinUpdate            cid.Cid           `json:"pin_update,omitempty" codec:"pu,omitempty"`
 }
@@ -535,7 +535,7 @@ func (po *PinOptions) ToQuery() string {
 	q.Set("name", po.Name)
 	q.Set("shard-size", fmt.Sprintf("%d", po.ShardSize))
 	q.Set("user-allocations", strings.Join(PeersToStrings(po.UserAllocations), ","))
-	q.Set("expire", fmt.Sprintf("%d", po.Expire.UnixNano()))
+	q.Set("expire", fmt.Sprintf("%d", po.Expire))
 	for k, v := range po.Metadata {
 		if k == "" {
 			continue
@@ -584,15 +584,15 @@ func (po *PinOptions) FromQuery(q url.Values) error {
 		if err != nil {
 			return fmt.Errorf("parameter expire invalid")
 		}
-		po.Expire = time.Unix(0, int64(tm))
+		po.Expire = tm
 	} else if v = q.Get("expires-in"); v != "" {
 		d, err := time.ParseDuration(v)
 		if err != nil {
 			return errors.New("parameter expires-in invalid")
 		}
-		po.Expire = time.Now().Add(d)
+		po.Expire = time.Now().Add(d).UnixNano()
 	} else {
-		po.Expire = time.Unix(0, 0)
+		po.Expire = 0
 	}
 
 	po.Metadata = make(map[string]string)
@@ -713,7 +713,7 @@ func (pin *Pin) ProtoMarshal() ([]byte, error) {
 		// UserAllocations:      pin.UserAllocations,
 		Metadata:  pin.Metadata,
 		PinUpdate: pin.PinUpdate.Bytes(),
-		Expire:    pin.Expire.UnixNano(),
+		Expire:    pin.Expire,
 	}
 
 	pbPin := &pb.Pin{
@@ -772,7 +772,7 @@ func (pin *Pin) ProtoUnmarshal(data []byte) error {
 	pin.Name = opts.GetName()
 	pin.ShardSize = opts.GetShardSize()
 	// pin.UserAllocations = opts.GetUserAllocations()
-	pin.Expire = time.Unix(0, opts.GetExpire())
+	pin.Expire = opts.GetExpire()
 	pin.Metadata = opts.GetMetadata()
 	pinUpdate, err := cid.Cast(opts.GetPinUpdate())
 	if err == nil {

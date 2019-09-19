@@ -781,7 +781,7 @@ func TestClusterPinsWithExpiration(t *testing.T) {
 
 	c := test.Cid1
 	opts := api.PinOptions{
-		Expire: time.Now().Add(40 * time.Second),
+		Expire: time.Now().Add(40 * time.Second).UnixNano(),
 	}
 	_, err := cl.Pin(ctx, c, opts)
 	if err != nil {

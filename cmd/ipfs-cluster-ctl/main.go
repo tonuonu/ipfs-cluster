@@ -415,7 +415,7 @@ content.
 				if expiresIn := c.String("expires-in"); expiresIn != "" {
 					d, err := time.ParseDuration(expiresIn)
 					checkErr("parsing expires-in", err)
-					p.Expire = time.Now().Add(d)
+					p.Expire = time.Now().Add(d).UnixNano()
 				}
 
 				p.Metadata = parseMetadata(c.StringSlice("metadata"))
@@ -586,13 +586,13 @@ would stil be respected.
 								checkErr("decoding allocations", errors.New("some peer IDs could not be decoded"))
 							}
 						}
-						var expire time.Time
+						var expire int64
 						if expiresIn := c.String("expires-in"); expiresIn != "" {
 							d, err := time.ParseDuration(expiresIn)
 							checkErr("parsing expires-in", err)
-							expire = time.Now().Add(d)
+							expire = time.Now().Add(d).UnixNano()
 						} else {
-							expire = time.Unix(0, 0)
+							expire = 0
 						}
 
 						opts := api.PinOptions{
